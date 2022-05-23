@@ -1,0 +1,105 @@
+        -:    0:Source:src/LSE_init.c
+        -:    0:Graph:LSE_init.gcno
+        -:    0:Data:LSE_init.gcda
+        -:    0:Runs:1
+        -:    1:/************************************************************************************
+        -:    2:**   		    NAME     :   Team -3
+        -:    3:**                           Abhishek Upadhyay(Emp.ID=46192178) 
+        -:    4:**                           shivam Gupta(Emp.ID=46192287)
+        -:    5:**                           Ravish Bilal(Emp.ID=46192182)   
+        -:    6:**                           Siddharth Vikas Kumar(EMP.ID=46192202)
+        -:    7:**                           Priyam Jain (EMP.ID=46192205)
+        -:    8:**                           Shivam Saraswat (EMP.ID=46192288)
+        -:    9:**
+        -:   10:**        DESCRIPTION    :    Sprint-1(Local Search Engine)
+        -:   11:**
+        -:   12:**       last updated    :    11-03-2022
+        -:   13:**
+        -:   14:**
+        -:   15:************************************************************************************/
+        -:   16:
+        -:   17:#include "function_definition.c"//including file function_definition.c
+        -:   18:
+        -:   19:/************************************************************************************
+        -:   20:**     FUNCTION NAME     :     main
+        -:   21:**
+        -:   22:**    DESCRIPTION        :     Displaying the user interface /providing options and 
+        -:   23:**                             calling operation functions 
+        -:   24:**
+        -:   25:**     RETURNS           :     Returns an integer(EXIT_SUCCESS) 
+        -:   26:**
+        -:   27:**
+        -:   28:**     Created by        :     Team
+        -:   29:************************************************************************************/
+        -:   30:
+        1:   31:int main(void)
+        -:   32:{
+        1:   33:    int flag = 1;
+        1:   34:    char * username = getlogin();
+        1:   35:    strcat(path, username);
+        1:   36:    strcat(path, "/");
+        -:   37:    
+        -:   38:    do{
+        -:   39:        //for user interface details/design
+      505:   40:        LINE
+        -:   41:    
+        5:   42:        printf("\t\t\tWelcome to Local Search Engine(LSE)\t\n\n");
+        -:   43:        
+      505:   44:        LINE
+        5:   45:                printf("1. Search by word/sentence\n");
+        5:   46:                printf("2. Search by filename\n");
+        5:   47:                printf("3. Open file with absolute path\n");
+        5:   48:                printf("4. Quit\n");
+      505:   49:                LINE
+        5:   50:                printf("Choose an option(1-4):");
+        -:   51:
+        -:   52:                char ch[MAX_LENGTH];
+        -:   53:                //for taking the input choice among the options provided
+        5:   54:                scanf("%s", ch);
+        -:   55:                
+        5:   56:                getchar();//for clearing next line from buffer
+        5:   57:                printf("\n");
+        -:   58:
+        5:   59:                if(strlen(ch) > 1){
+    #####:   60:                    ch[0] = '6';
+        -:   61:                }
+        -:   62:
+        -:   63:                //handeling user cases 
+        5:   64:                switch (ch[0])
+        -:   65:                {
+        1:   66:                    case '1':
+        -:   67:                        //function call to search by word or sentence in our file system
+        1:   68:                        searchByWord();
+        1:   69:                        break;
+        -:   70:                    
+        2:   71:                    case '2':
+        -:   72:                        // function call to search by file name in our file system
+        2:   73:                        searchByFilename();
+        2:   74:                        break;
+        -:   75:
+        1:   76:                    case '3':
+        -:   77:                        //function call to open file with given absolute file path
+        1:   78:                        openWithAbsolutePath();
+        1:   79:                        break;
+        1:   80:                    case '4':
+        -:   81:                        // for exit
+        1:   82:                        exit(EXIT_SUCCESS);
+        -:   83:                    
+    #####:   84:                    default:
+        -:   85:                        //to handle unwanted choices
+    #####:   86:                        printf("Invalid choice please select among(1-4) only..\n\n");
+    #####:   87:                        flag=1;
+    #####:   88:                        break;
+        -:   89:                }
+        4:   90:                strcpy(path, "/home/");
+        4:   91:                strcat(path, username);
+        4:   92:                strcat(path, "/");
+        -:   93:
+        4:   94:    }while(flag==1);//to recur among the choices 
+        -:   95:
+    #####:   96:    return(EXIT_SUCCESS);
+        -:   97:}
+        -:   98:
+        -:   99:
+        -:  100:
+        -:  101:

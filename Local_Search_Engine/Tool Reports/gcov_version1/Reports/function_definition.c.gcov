@@ -1,0 +1,609 @@
+        -:    0:Source:src/function_definition.c
+        -:    0:Graph:LSE_init.gcno
+        -:    0:Data:LSE_init.gcda
+        -:    0:Runs:1
+        -:    1://include the header file function.h
+        -:    2:#include "../inc/function.h"
+        -:    3:
+        -:    4:/************************************************************************************
+        -:    5:**     FUNCTION NAME     :     isFile
+        -:    6:**
+        -:    7:**    DESCRIPTION        :    function to find whether given path is a directory or  
+        -:    8:**                            a file
+        -:    9:**
+        -:   10:**     RETURNS           :    return an integer (0=directory,1=file ,-1 =elsewise) 
+        -:   11:**     
+        -:   12:**     
+        -:   13:**      Created by       :    Ravish
+        -:   14:************************************************************************************/
+        -:   15:
+     2632:   16:int isFile(const char* name)
+        -:   17:{
+     2632:   18:    DIR* directory = opendir(name);
+        -:   19:
+     2632:   20:    if(directory != NULL)
+        -:   21:    {
+      516:   22:     closedir(directory);
+      516:   23:     return 0;
+        -:   24:    }
+     2116:   25:    if(errno == ENOTDIR)
+        -:   26:    {
+     2116:   27:     return 1;
+        -:   28:    }
+        -:   29:
+    #####:   30:    return -1;
+        -:   31:}
+        -:   32:
+        -:   33:/************************************************************************************
+        -:   34:**     FUNCTION NAME     :     extractFileName
+        -:   35:**
+        -:   36:**    DESCRIPTION        :    function to extract the File name from given path
+        -:   37:**
+        -:   38:**     RETURNS           :    return a pointer to char 
+        -:   39:**
+        -:   40:**
+        -:   41:**     Created by        :     Priyam   
+        -:   42:************************************************************************************/
+      201:   43:char *extractFileName(char * path){
+      201:   44:    char *token = strtok(path, "/");
+      201:   45:    char * prev = (char * ) malloc(MAX_LENGTH * sizeof(char));
+      201:   46:    if(prev==NULL)
+        -:   47:    {
+    #####:   48:        return "Memory Allocation Failed!!\n";
+        -:   49:    }
+        -:   50:
+     1534:   51:    while(token != NULL){
+     1333:   52:        strcpy(prev, token);
+     1333:   53:        token = strtok(NULL, "/");
+        -:   54:    }
+        -:   55:
+      201:   56:    return prev;
+        -:   57:}
+        -:   58:
+        -:   59:/************************************************************************************
+        -:   60:**     FUNCTION NAME     :     createFileNode
+        -:   61:**
+        -:   62:**    DESCRIPTION        :    function to create a node in a Linked List
+        -:   63:**
+        -:   64:**     RETURNS           :    returns EXIT_SUCCESS/EXIT_FAILURE
+        -:   65:**
+        -:   66:**
+        -:   67:**      Created by       :    Abhishek
+        -:   68:************************************************************************************/
+        -:   69:
+      201:   70:int createFileNode(char *path){
+        -:   71:    
+        -:   72:    char copyPath[MAX_PATH_LENGTH];
+      201:   73:    strcpy(copyPath, path);
+        -:   74:
+      201:   75:    if(head == NULL){
+        3:   76:        head = (File *) malloc(sizeof(File));
+        3:   77:        if(head==NULL)
+        -:   78:        {
+    #####:   79:            fprintf(stderr,"%s","Memory Allocation Failed...!!\n");
+    #####:   80:            return EXIT_FAILURE;
+        -:   81:        }
+        3:   82:        strcpy(head->f_path, copyPath);
+        3:   83:        char * str = extractFileName(path);
+        3:   84:        strcpy(head->f_name, str);
+        3:   85:        counter=0;
+        3:   86:        printf("File %d --> %s path:[%s]\n",counter, head->f_name, head->f_path);
+        3:   87:        free(str); 
+        3:   88:        head->next = NULL;
+        3:   89:        curr = head;       
+        -:   90:    }else{
+      198:   91:        curr->next = (File *) malloc(sizeof(File));
+      198:   92:        if(curr->next==NULL)
+        -:   93:        {
+    #####:   94:            fprintf(stderr,"%s","Memory Allocation Failed...!!\n");
+    #####:   95:            return EXIT_FAILURE;
+        -:   96:        }
+      198:   97:        curr = curr->next;
+      198:   98:        strcpy(curr->f_path, copyPath);
+      198:   99:        char * str = extractFileName(path);
+      198:  100:        strcpy(curr->f_name, str);
+      198:  101:        counter+=1;
+      198:  102:        printf("File %d --> %s path:[%s]\n",counter, curr->f_name, curr->f_path);
+      198:  103:        free(str);
+      198:  104:        curr->next = NULL;
+        -:  105:    }
+      201:  106:    return EXIT_SUCCESS;
+        -:  107:}
+        -:  108:
+        -:  109:/************************************************************************************
+        -:  110:**     FUNCTION NAME     :     searchInFile
+        -:  111:**
+        -:  112:**    DESCRIPTION        :      it takes a single argument a pointer to char (path of file )
+        -:  113:**                              opens the file and check whether givem search argument(string)
+        -:  114:**                              is present inside the file. If present create a file node add it
+        -:  115:**                              to the Linked List and increment file counter else skip the file. 
+        -:  116:**
+        -:  117:**     RETURNS           :      returns EXIT_SUCCESS/EXIT_FAILURE
+        -:  118:**
+        -:  119:**     Created By        :      Priyam
+        -:  120:************************************************************************************/
+        -:  121:
+      228:  122:int searchInFile(char *path){
+      228:  123:    FILE *f = fopen(path, "r");
+      228:  124:    if( access( path, F_OK ) != 0) {
+        -:  125:        //File doesn't have read permission
+    #####:  126:        return EXIT_FAILURE;
+        -:  127:    }
+      228:  128:    if(f == NULL){
+    #####:  129:        return EXIT_FAILURE;
+        -:  130:    }
+        -:  131:    char temp[MAX_LENGTH];
+    29711:  132:    while (fgets(temp, MAX_LENGTH, f) != NULL)
+        -:  133:    {
+    29494:  134:        if(strstr(temp, input) != NULL){ //Match found
+       11:  135:            fileCount++;
+       11:  136:            int res = createFileNode(path);
+       11:  137:            if(res == EXIT_FAILURE){
+    #####:  138:                return EXIT_FAILURE;
+        -:  139:            }
+       11:  140:            break;
+        -:  141:        }
+        -:  142:    }   
+      228:  143:    if(f){
+      228:  144:        fclose(f);
+        -:  145:    }
+      228:  146:    return EXIT_SUCCESS;
+        -:  147:    
+        -:  148:}
+        -:  149:
+        -:  150:/************************************************************************************
+        -:  151:**     FUNCTION NAME     :      openFile
+        -:  152:**
+        -:  153:**    DESCRIPTION        :      it is a utility function which takes the file path and prints its 
+        -:  154:**                              contents on the console
+        -:  155:**
+        -:  156:**     RETURNS           :      returns EXIT_SUCCESS/EXIT_FAILURE
+        -:  157:**
+        -:  158:**     Created By        :      Shivam
+        -:  159:************************************************************************************/
+        -:  160:
+        4:  161:int openFile(char * fpath){
+        4:  162:    FILE * fptr = fopen(fpath, "r");
+        4:  163:    if(fptr == NULL){
+    #####:  164:        fprintf(stderr,"%s","File not Found...!!\n");
+    #####:  165:        if(fptr){
+    #####:  166:            fclose(fptr);
+        -:  167:        }
+    #####:  168:        return EXIT_FAILURE;
+        -:  169:    }
+        4:  170:    if(isFile(fpath) == 0){
+    #####:  171:        fprintf(stderr,"%s","Given path is a directory...!!\n");
+        -:  172:
+    #####:  173:        if(fptr){
+    #####:  174:            fclose(fptr);
+        -:  175:        }
+        -:  176:
+    #####:  177:        return EXIT_FAILURE;
+        -:  178:    }
+        -:  179:    
+        4:  180:    printf("File opened!\n\n");
+      404:  181:    LINE
+        4:  182:    char c = fgetc(fptr);
+      110:  183:    while (c != EOF)
+        -:  184:    {
+      106:  185:        printf ("%c", c);
+      106:  186:        c = fgetc(fptr);
+        -:  187:    }
+        -:  188:
+        4:  189:    printf("\n");
+        4:  190:    fclose(fptr);
+        -:  191:
+        4:  192:    return EXIT_SUCCESS;
+        -:  193:}
+        -:  194:
+        -:  195:/************************************************************************************
+        -:  196:**    FUNCTION NAME     :      printLinkedList
+        -:  197:**
+        -:  198:**    DESCRIPTION        :     prints the Link List  
+        -:  199:**
+        -:  200:**     RETURNS           :    returns EXIT_SUCCESS/EXIT_FAILURE
+        -:  201:**
+        -:  202:**
+        -:  203:**    Created By        :     shivam and Abhishek
+        -:  204:************************************************************************************/
+        -:  205:
+        3:  206:int printLinkedList(File **ptr){
+        3:  207:    if(fileCount == 0 || ptr==NULL){
+    #####:  208:        fprintf(stderr,"%s","No files Found...!!\n");
+    #####:  209:        return EXIT_FAILURE;
+        -:  210:    }
+        -:  211:
+        3:  212:    int flag = 0;
+        -:  213:    char mychoice[MAX_LENGTH];
+      303:  214:    LINE
+        3:  215:    printf("do you want to open any file!!(y/n)\n");
+        3:  216:    scanf("%s",mychoice);
+        3:  217:    getchar();
+        3:  218:    if(mychoice[0]=='y'||mychoice[0]=='Y')
+        -:  219:    {
+        -:  220:    
+        -:  221:    do
+        -:  222:    {   
+        3:  223:        printf("\n%d file(s) found\n\n", fileCount);
+      303:  224:        LINE
+        -:  225:            
+        3:  226:            printf("Select the file number which you want to open\n");
+        -:  227:            char option[MAX_LENGTH];
+        3:  228:            int myflag = 0;
+        3:  229:            int num = 0;
+        -:  230:            do
+        -:  231:            {
+        3:  232:                printf("Please enter file index number\n");
+        3:  233:                scanf("%s", option);
+        3:  234:                getchar();
+        3:  235:                myflag=0;
+        3:  236:                num=0;
+        6:  237:                for(int i=0;option[i]!='\0';i++)
+        -:  238:                {
+        3:  239:                    if(isdigit(option[i])==0)
+        -:  240:                    {
+    #####:  241:                        myflag=1;
+    #####:  242:                        break;
+        -:  243:                    }
+        -:  244:                    else
+        -:  245:                    {
+        3:  246:                        num=num*10+(option[i]-48);
+        -:  247:                    }
+        -:  248:                }
+        3:  249:                if(myflag==1||num<0||num>fileCount-1)
+    #####:  250:                    fprintf(stderr,"%s","File index does not exist...!!\n");
+        -:  251:
+        -:  252:
+        3:  253:            } while (num < 0 || num > fileCount-1||myflag==1);
+        -:  254:
+        3:  255:            File *tmp = *(ptr+num);
+      303:  256:            LINE
+        3:  257:            openFile(tmp->f_path);
+        3:  258:            num= -1;
+      303:  259:            LINE
+        3:  260:            printf("Do you want to open other file?(y/n)");
+        -:  261:            char ch[MAX_LENGTH];
+        3:  262:            scanf("%s", ch);
+        3:  263:            getchar();
+        3:  264:            if(strlen(ch) > 1){
+    #####:  265:                ch[0] = '5';
+        -:  266:            }
+        -:  267:
+        3:  268:            switch (ch[0])
+        -:  269:            {
+        1:  270:            case 'y':
+        -:  271:            case 'Y':
+        1:  272:                flag = 0;
+        1:  273:                break;
+        2:  274:            case 'N':
+        -:  275:            case 'n':
+        2:  276:                flag = 1;
+        2:  277:                break;
+    #####:  278:            default:
+    #####:  279:                fprintf(stderr,"%s","Invalid Choice...!!\n");
+    #####:  280:                flag = 1;
+    #####:  281:                break;
+        -:  282:            }  
+        -:  283:        
+        3:  284:    } while (flag == 0); 
+        -:  285:    }
+       1*:  286:    else if((mychoice[0]!='n' && mychoice[0]!='N' )||strlen(mychoice)>1)
+        -:  287:    {
+        1:  288:        fprintf(stderr,"%s","Invalid choice!!\n");
+        -:  289:    }
+        -:  290:
+        3:  291:    return EXIT_SUCCESS;
+        -:  292:}
+        -:  293:
+        -:  294:/************************************************************************************
+        -:  295:**     FUNCTION NAME     :      freeMemory
+        -:  296:**
+        -:  297:**    DESCRIPTION        :      free all the memory created dynamically till now  
+        -:  298:**
+        -:  299:**     RETURNS           :      returns EXIT_SUCCESS/EXIT_FAILURE
+        -:  300:**
+        -:  301:**      Created by       :      shivam
+        -:  302:************************************************************************************/
+        -:  303:
+        3:  304:int freeMemory(File **ptr){
+        -:  305:
+        3:  306:    if(ptr == NULL){
+    #####:  307:        return EXIT_SUCCESS;
+        -:  308:    }
+        -:  309:
+      204:  310:    for(int i = 0; i<fileCount; i++){
+      201:  311:        if(*(ptr+i) != NULL){
+      201:  312:            free(*(ptr+i));
+      201:  313:            *(ptr+i)=NULL;
+        -:  314:        }
+        -:  315:    }
+        3:  316:    head = NULL;
+        3:  317:    curr = NULL;
+        3:  318:    free(ptr);
+        3:  319:    ptr=NULL;
+        3:  320:    if(ptr != NULL){
+    #####:  321:        return EXIT_FAILURE;
+        -:  322:    }else{
+        3:  323:        return EXIT_SUCCESS;
+        -:  324:    }
+        -:  325:}
+        -:  326:
+        -:  327:/************************************************************************************
+        -:  328:**     FUNCTION NAME     :      allocateMemory
+        -:  329:**
+        -:  330:**    DESCRIPTION        :      creates a pointer to an array of pointers of File structure  
+        -:  331:**                              and stores the pointer to every node for quick access and 
+        -:  332:**                              calls the function printLinkedList 
+        -:  333:**
+        -:  334:**     RETURNS           :      returns EXIT_SUCCESS/EXIT_FAILURE 
+        -:  335:**
+        -:  336:**     Created by        :      Siddharth
+        -:  337:************************************************************************************/
+        -:  338:
+        3:  339:int allocateMemory(){
+        3:  340:    File **ptr = (File **) malloc(fileCount * sizeof(File *));
+        -:  341:
+        3:  342:    if(ptr == NULL){
+        -:  343:
+    #####:  344:        return EXIT_FAILURE;
+        -:  345:    }
+        -:  346:
+        3:  347:    if(head != NULL){
+        3:  348:        File * tmp = head;
+        3:  349:        int c = 0;
+      204:  350:        while(tmp != NULL){
+      201:  351:            *(ptr + c) = tmp;
+      201:  352:            tmp = tmp->next;
+      201:  353:            c++;
+        -:  354:        }
+        -:  355:    }
+        -:  356:
+        3:  357:    printLinkedList(ptr);
+        3:  358:    int res = freeMemory(ptr);
+        3:  359:    if(res == EXIT_FAILURE){
+    #####:  360:        return EXIT_FAILURE;
+        -:  361:    }
+        3:  362:    return EXIT_SUCCESS;
+        -:  363:}
+        -:  364:
+        -:  365:/************************************************************************************
+        -:  366:**     FUNCTION NAME      :      searchLocalSytem
+        -:  367:**
+        -:  368:**     DESCRIPTION        :      search the system recursively in all the directories for 
+        -:  369:**                              the given path
+        -:  370:**
+        -:  371:**     RETURNS            :      returns EXIT_SUCCESS/EXIT_FAILURE.
+        -:  372:**
+        -:  373:**     
+        -:  374:**     Created by          :      Abhishek
+        -:  375:************************************************************************************/
+        -:  376:
+      519:  377:int searchLocalSystem(const char * path){
+        -:  378:    
+        -:  379:    DIR *d;
+        -:  380:    struct dirent *dir;
+      519:  381:    d = opendir(path);
+      519:  382:    if (d)
+        -:  383:    {
+     4239:  384:        while ((dir = readdir(d)) != NULL)
+        -:  385:        {
+     3720:  386:            if(strcmp(dir->d_name, ".") == 0 ||
+     3201:  387:                 strcmp(dir->d_name, "..") == 0 ||
+     2682:  388:                    dir->d_name[0] == '.'){
+     1092:  389:                continue;
+        -:  390:            }
+     2628:  391:            char *currPath = (char *) calloc(1000, sizeof(char));
+     2628:  392:            strcat(currPath, path);
+     2628:  393:            strcat(currPath, dir->d_name);
+     2628:  394:            strcat(currPath, "/");
+     2628:  395:            if(isFile(currPath) == 0){
+      516:  396:                searchLocalSystem(currPath); // Recursive call to the new appended path
+        -:  397:            }else{
+     2112:  398:                if(strstr(dir->d_name,".txt")==NULL
+     1968:  399:                            &&strstr(dir->d_name,".c")==NULL   
+     1542:  400:                                &&strstr(dir->d_name,".h")==NULL)
+        -:  401:                {
+     1428:  402:                    free(currPath);
+     1428:  403:                    continue;
+        -:  404:                }
+      684:  405:                currPath[strlen(currPath) - 1] = '\0';
+      684:  406:                if(search == SEARCH_WITH_WORD){
+      228:  407:                    int res = searchInFile(currPath);
+      228:  408:                    if(res == EXIT_FAILURE){
+    #####:  409:                        free(currPath);
+    #####:  410:                        return EXIT_FAILURE;
+        -:  411:                    }
+        -:  412:                }else{
+      456:  413:                    if(strcmp(dir->d_name, filename) == 0 || strstr(dir->d_name,filename)!=NULL){
+      190:  414:                        fileCount++;
+      190:  415:                        int res = createFileNode(currPath);
+      190:  416:                        if(res == EXIT_FAILURE){
+    #####:  417:                            free(currPath);
+    #####:  418:                            return EXIT_FAILURE;
+        -:  419:                        }
+        -:  420:                    }                    
+        -:  421:                }
+        -:  422:            }
+     1200:  423:            free(currPath);
+        -:  424:        }
+      519:  425:        closedir(d);
+        -:  426:    }
+        -:  427:    else    
+    #####:  428:        return EXIT_FAILURE;
+      519:  429:    return EXIT_SUCCESS;
+        -:  430:}
+        -:  431:
+        -:  432:/************************************************************************************
+        -:  433:**     FUNCTION NAME     :      searchByWord
+        -:  434:**
+        -:  435:**    DESCRIPTION        :      function to get the search string and call the file system(searchLocalSystem)   
+        -:  436:**                              to find the given word
+        -:  437:**
+        -:  438:**     RETURNS           :      returns EXIT_SUCCESS/EXIT_FAILURE
+        -:  439:**
+        -:  440:**     Created By        :      Ravish
+        -:  441:************************************************************************************/
+        -:  442:
+        1:  443:int searchByWord(){
+        -:  444:    
+        1:  445:    search = SEARCH_WITH_WORD;
+        1:  446:    int flag = 0;
+        -:  447:
+        1:  448:    printf("Enter search string/word:\n");
+        1:  449:    fgets(input,MAX_LENGTH, stdin);
+        1:  450:    input[strlen(input) - 1] = '\0';
+      101:  451:    LINE
+        1:  452:    printf("Do you want to search at any specific locations?(y/n)\n");
+        -:  453:    
+        -:  454:    char c[MAX_LENGTH];
+        1:  455:    fgets(c, MAX_LENGTH, stdin);
+        1:  456:    c[strlen(c) - 1] = '\0';
+        -:  457:    
+        1:  458:    if(strlen(c) > 1){
+    #####:  459:        c[0] = 'k';
+        -:  460:    }  
+        -:  461:
+        -:  462:
+        -:  463:    char userPath[MAX_LENGTH];
+        1:  464:    switch (c[0])
+        -:  465:    {
+        1:  466:        case 'y':
+        -:  467:        case 'Y':
+        1:  468:            flag = 1;
+        1:  469:            printf("Please provide path\n");
+        1:  470:            printf("%s", path);
+        1:  471:            fgets(userPath, 50, stdin);
+        1:  472:            userPath[strlen(userPath) - 1] = '\0';
+        1:  473:            strcat(path, userPath);
+        1:  474:            strcat(path, "/");
+        -:  475:
+      101:  476:            LINE
+        1:  477:            printf("Searching..\n");
+        1:  478:            searchLocalSystem(path);
+        1:  479:            break;
+        -:  480:        
+    #####:  481:        case 'n':
+        -:  482:        case 'N':
+    #####:  483:            printf("Searching..\n");
+    #####:  484:            printf("%s\n", path);
+    #####:  485:            flag = 1;
+    #####:  486:            searchLocalSystem(path);
+    #####:  487:            break;
+        -:  488:        
+    #####:  489:        default:
+    #####:  490:            fprintf(stderr,"%s","Wrong Choice...!!\n");
+    #####:  491:            break;
+        -:  492:    }
+        -:  493:    
+        1:  494:    if(flag == 1){
+        1:  495:        int res = allocateMemory();
+        1:  496:        if(res == EXIT_FAILURE){
+    #####:  497:            fileCount = 0;
+    #####:  498:            fprintf(stderr,"%s","Cannot list files.\n");
+    #####:  499:        return EXIT_FAILURE;
+        -:  500:        }
+        -:  501:    }
+        -:  502:    
+        1:  503:    fileCount = 0;
+        -:  504:    
+        1:  505:    return EXIT_SUCCESS;
+        -:  506:}
+        -:  507:
+        -:  508:/************************************************************************************
+        -:  509:**     FUNCTION NAME     :      searchFileName
+        -:  510:**
+        -:  511:**    DESCRIPTION        :      function to get the search string(file Name) and call the file    
+        -:  512:**                              system(searchLocalSystem) to find the given file name
+        -:  513:**
+        -:  514:**     RETURNS           :      returns EXIT_SUCCESS/EXIT_FAILURE
+        -:  515:**
+        -:  516:**     Created By        :      Shivam
+        -:  517:************************************************************************************/
+        -:  518:
+        2:  519:int searchByFilename(){
+        2:  520:    search=SEARCH_WITH_FILENAME;
+        2:  521:    int flag = 0;
+        2:  522:    printf("Enter filename to be searched:\n");
+        2:  523:    fgets(filename,MAX_LENGTH, stdin);
+        2:  524:    printf("Searching %s\n", filename);
+      202:  525:    LINE
+        2:  526:    filename[strlen(filename) - 1] = '\0';
+        -:  527:    
+        2:  528:    printf("Do you want to provide any absolute directory path?(y/n)\n");
+        -:  529:    
+        -:  530:    char userPath[MAX_LENGTH];
+        -:  531:    char c[10];
+        2:  532:    fgets(c, 10, stdin);
+        2:  533:    c[strlen(c) - 1]='\0';
+        -:  534:
+        2:  535:    if(strlen(c) > 1){
+    #####:  536:        c[0] = 'k';
+        -:  537:    }  
+        -:  538:
+        2:  539:    switch (c[0])
+        -:  540:    {
+        2:  541:        case 'y':
+        -:  542:        case 'Y':
+        2:  543:            flag = 1;
+        2:  544:            printf("Enter absolute path:\n");
+        2:  545:            printf("$:%s", path);
+        2:  546:            fgets(userPath, MAX_LENGTH, stdin);
+        2:  547:            userPath[strlen(userPath)-1] = '\0';
+        2:  548:            strcat(path, userPath);
+        2:  549:            strcat(path, "/");
+        2:  550:            printf("\n");
+      202:  551:            LINE
+        2:  552:            searchLocalSystem(path);
+        -:  553:
+        2:  554:            break;
+        -:  555:
+    #####:  556:        case 'n':
+        -:  557:        case 'N':
+    #####:  558:            flag = 1;
+    #####:  559:            searchLocalSystem(path);
+    #####:  560:            break;
+    #####:  561:        default:
+    #####:  562:             fprintf(stderr,"%s","Innvalid Choice.\n");
+    #####:  563:            break;
+        -:  564:    }    
+        -:  565:
+        2:  566:    if(flag == 1){
+        2:  567:        int res = allocateMemory();
+        2:  568:        if(res == EXIT_FAILURE){
+    #####:  569:            fprintf(stderr,"%s","Cannot list files.\n");
+    #####:  570:            fileCount = 0;
+        -:  571:
+    #####:  572:            return EXIT_FAILURE;
+        -:  573:        }
+        -:  574:    }
+        2:  575:    fileCount = 0;
+        -:  576:
+        2:  577:   return EXIT_SUCCESS;
+        -:  578:}
+        -:  579:
+        -:  580:/************************************************************************************
+        -:  581:**     FUNCTION NAME     :      openWithAbsolutePath
+        -:  582:**
+        -:  583:**    DESCRIPTION        :      function to get the absolute file path and displays all the 
+        -:  584:**                              contents of the given file path using openFile function 
+        -:  585:**
+        -:  586:**     RETURNS           :      returns EXIT_SUCCESS/EXIT_FAILURE
+        -:  587:**
+        -:  588:**     Created by        :      Siddharth
+        -:  589:************************************************************************************/
+        -:  590:
+        1:  591:int openWithAbsolutePath(){
+        1:  592:    printf("Enter abolute path to the file:\n");
+        1:  593:    printf("$:%s",path);
+        -:  594:    char pathInput[MAX_LENGTH];
+        -:  595:
+        1:  596:    fgets(pathInput, MAX_LENGTH, stdin);
+        1:  597:    pathInput[strlen(pathInput) - 1] = '\0';
+        -:  598:
+        1:  599:    strcat(path, pathInput);
+        -:  600:
+        1:  601:    openFile(path);
+        -:  602:
+        1:  603:    return EXIT_SUCCESS;
+        -:  604:
+        -:  605:}
